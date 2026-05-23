@@ -15,9 +15,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
     "mongodb-memory-server": "^8.11.1",
-    "tsx": "^4.22.3",
-    "mongoose": "^7.5.0"
+    "mongoose": "^7.5.0",
+    "tsx": "^4.22.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

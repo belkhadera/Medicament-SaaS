@@ -8,8 +8,8 @@ interface LoginScreenProps {
 }
 
 export function LoginScreen({ onLogin, onForgotPassword }: LoginScreenProps) {
-  const [email, setEmail] = useState('sarah.j@hospital.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

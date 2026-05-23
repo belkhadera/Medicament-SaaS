@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { NavItem } from '../components/layout/NavItem';
 import { authService, User } from '../../services/auth.service';
+import { dashboardService } from '../../services/dashboard.service';
+import { notificationService } from '../../services/notification.service';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -40,10 +42,29 @@ export function MainLayout({
 }: MainLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [lowStockCount, setLowStockCount] = useState(0);
+  const [expiringCount, setExpiringCount] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     setUser(authService.getCurrentUser());
-  }, []);
+
+    const fetchBadges = async () => {
+      try {
+        const [statsRes, notifRes] = await Promise.all([
+          dashboardService.getStockStatus(),
+          notificationService.getUnreadCount(),
+        ]);
+        setLowStockCount(statsRes.data.low + statsRes.data.out);
+        setExpiringCount(statsRes.data.expiringSoon + statsRes.data.expired);
+        setUnreadNotifications(notifRes.data.count);
+      } catch (err) {
+        // badges are non-critical; silently ignore
+      }
+    };
+
+    fetchBadges();
+  }, [currentScreen]);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -64,14 +85,14 @@ export function MainLayout({
         <nav className="flex-1 p-4 overflow-y-auto">
           <NavItem icon={LayoutDashboard} label="Dashboard" active={currentScreen === 'dashboard'} onClick={() => onScreenChange('dashboard')} />
           <NavItem icon={ScanLine} label="Scan Medication" active={currentScreen === 'scanning'} onClick={() => onScreenChange('scanning')} />
-          <NavItem icon={Package} label="Inventory" active={currentScreen === 'inventory'} onClick={() => onScreenChange('inventory')} badge="8" />
-          <NavItem icon={AlertTriangle} label="Expiration Monitor" active={currentScreen === 'expiration'} onClick={() => onScreenChange('expiration')} badge="5" badgeVariant="warning" />
+          <NavItem icon={Package} label="Inventory" active={currentScreen === 'inventory'} onClick={() => onScreenChange('inventory')} badge={lowStockCount > 0 ? String(lowStockCount) : undefined} />
+          <NavItem icon={AlertTriangle} label="Expiration Monitor" active={currentScreen === 'expiration'} onClick={() => onScreenChange('expiration')} badge={expiringCount > 0 ? String(expiringCount) : undefined} badgeVariant="warning" />
           <NavItem icon={BarChart3} label="Analytics" active={currentScreen === 'analytics'} onClick={() => onScreenChange('analytics')} />
           <NavItem icon={FileText} label="Reports" active={currentScreen === 'reports'} onClick={() => onScreenChange('reports')} />
           <NavItem icon={Warehouse} label="Storage Units" active={currentScreen === 'storage'} onClick={() => onScreenChange('storage')} />
           <NavItem icon={Truck} label="Suppliers" active={currentScreen === 'suppliers'} onClick={() => onScreenChange('suppliers')} />
           <NavItem icon={Users} label="User Management" active={currentScreen === 'users'} onClick={() => onScreenChange('users')} />
-          <NavItem icon={Bell} label="Notifications" active={currentScreen === 'notifications'} onClick={() => onScreenChange('notifications')} badge="12" badgeVariant="danger" />
+          <NavItem icon={Bell} label="Notifications" active={currentScreen === 'notifications'} onClick={() => onScreenChange('notifications')} badge={unreadNotifications > 0 ? String(unreadNotifications) : undefined} badgeVariant="danger" />
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
@@ -107,9 +128,14 @@ export function MainLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative p-2 hover:bg-accent rounded-lg">
+            <button
+              onClick={() => onScreenChange('notifications')}
+              className="relative p-2 hover:bg-accent rounded-lg"
+            >
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
+              {unreadNotifications > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
+              )}
             </button>
             <button className="p-2 hover:bg-accent rounded-lg">
               <Settings className="w-5 h-5" />

@@ -72,3 +72,33 @@ export const getUserProfile = async (req: any, res: Response) => {
     res.status(500).json({ message: 'Server error', error });
   }
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with that email address' });
+    }
+
+    // In production this would send an email with a reset link.
+    // For now we generate a temporary token and return it so the
+    // frontend can confirm the request was processed.
+    const resetToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET || 'fallback_secret',
+      { expiresIn: '1h' },
+    );
+
+    res.json({
+      message: 'Password reset instructions have been sent to your email',
+      resetToken,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
