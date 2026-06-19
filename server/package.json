@@ -6,7 +6,6 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "node --import tsx src/index.ts",
-    "seed": "node --import tsx seed.js",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -20,6 +19,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb-memory-server": "^8.11.1",
     "mongoose": "^7.5.0",
+    "node-cron": "^3.0.3",
     "nodemailer": "^8.0.8",
     "tsx": "^4.22.3",
     "zod": "^4.4.3"

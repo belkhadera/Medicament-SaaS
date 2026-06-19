@@ -6,7 +6,7 @@ export const getAllSuppliers = async (req: Request, res: Response) => {
     const suppliers = await Supplier.find().sort({ name: 1 });
     res.json(suppliers);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching suppliers', error });
+    res.status(500).json({ message: 'Erreur lors du chargement des fournisseurs', error });
   }
 };
 
@@ -16,7 +16,7 @@ export const createSupplier = async (req: Request, res: Response) => {
     const savedSupplier = await newSupplier.save();
     res.status(201).json(savedSupplier);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating supplier', error });
+    res.status(400).json({ message: 'Erreur lors de la création du fournisseur', error });
   }
 };
 
@@ -27,19 +27,19 @@ export const updateSupplier = async (req: Request, res: Response) => {
       req.body,
       { new: true }
     );
-    if (!updatedSupplier) return res.status(404).json({ message: 'Supplier not found' });
+    if (!updatedSupplier) return res.status(404).json({ message: 'Fournisseur introuvable' });
     res.json(updatedSupplier);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating supplier', error });
+    res.status(400).json({ message: 'Erreur lors de la mise à jour du fournisseur', error });
   }
 };
 
 export const deleteSupplier = async (req: Request, res: Response) => {
   try {
     const deletedSupplier = await Supplier.findByIdAndDelete(req.params.id);
-    if (!deletedSupplier) return res.status(404).json({ message: 'Supplier not found' });
-    res.json({ message: 'Supplier deleted successfully' });
+    if (!deletedSupplier) return res.status(404).json({ message: 'Fournisseur introuvable' });
+    res.json({ message: 'Fournisseur supprimé avec succès' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting supplier', error });
+    res.status(500).json({ message: 'Erreur lors de la suppression du fournisseur', error });
   }
 };

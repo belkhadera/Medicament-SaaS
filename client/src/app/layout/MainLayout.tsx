@@ -8,8 +8,8 @@ import {
   FileText,
   Warehouse,
   Truck,
-  Users,
-  Bell,
+  Tags,
+  ShoppingCart,
   Search,
   Menu,
   X,
@@ -17,8 +17,10 @@ import {
   LogOut,
   UserCircle,
   ScanLine,
+  Users,
 } from "lucide-react";
 import { NavItem } from "../components/layout/NavItem";
+import { NotificationBell } from "../components/layout/NotificationBell";
 import { useAuth } from "../components/useAuth";
 
 interface MainLayoutProps {
@@ -56,7 +58,7 @@ export function MainLayout({
               <h1 className="text-lg font-semibold text-foreground">
                 MediTrack
               </h1>
-              <p className="text-xs text-muted-foreground">Pro Healthcare</p>
+              <p className="text-xs text-muted-foreground">Santé Pro</p>
             </div>
           </div>
         </div>
@@ -64,84 +66,91 @@ export function MainLayout({
         <nav className="flex-1 p-4 overflow-y-auto">
           <NavItem
             icon={LayoutDashboard}
-            label="Dashboard"
+            label="Tableau de bord"
             active={currentScreen === "dashboard"}
             onClick={() => onScreenChange("dashboard")}
           />
           <NavItem
             icon={ScanLine}
-            label="Scan Medication"
+            label="Scanner un médicament"
             active={currentScreen === "scanning"}
             onClick={() => onScreenChange("scanning")}
           />
           <NavItem
             icon={Package}
-            label="Inventory"
+            label="Inventaire"
             active={currentScreen === "inventory"}
             onClick={() => onScreenChange("inventory")}
-            badge="8"
+          />
+          <NavItem
+            icon={Tags}
+            label="Médicaments"
+            active={currentScreen === "medications"}
+            onClick={() => onScreenChange("medications")}
           />
           <NavItem
             icon={AlertTriangle}
-            label="Expiration Monitor"
+            label="Alertes & avertissements"
             active={currentScreen === "expiration"}
             onClick={() => onScreenChange("expiration")}
-            badge="5"
-            badgeVariant="warning"
           />
           <NavItem
             icon={BarChart3}
-            label="Analytics"
+            label="Analyses"
             active={currentScreen === "analytics"}
             onClick={() => onScreenChange("analytics")}
           />
           <NavItem
             icon={FileText}
-            label="Reports"
+            label="Rapports"
             active={currentScreen === "reports"}
             onClick={() => onScreenChange("reports")}
           />
           <NavItem
             icon={Warehouse}
-            label="Storage Units"
+            label="Unités de stockage"
             active={currentScreen === "storage"}
             onClick={() => onScreenChange("storage")}
           />
           <NavItem
             icon={Truck}
-            label="Suppliers"
+            label="Fournisseurs"
             active={currentScreen === "suppliers"}
             onClick={() => onScreenChange("suppliers")}
           />
           <NavItem
-            icon={Users}
-            label="User Management"
-            active={currentScreen === "users"}
-            onClick={() => onScreenChange("users")}
+            icon={ShoppingCart}
+            label="Achats"
+            active={currentScreen === "purchasing"}
+            onClick={() => onScreenChange("purchasing")}
           />
-          <NavItem
-            icon={Bell}
-            label="Notifications"
-            active={currentScreen === "notifications"}
-            onClick={() => onScreenChange("notifications")}
-            badge="12"
-            badgeVariant="danger"
-          />
+          {user?.role === "Administrator" && (
+            <NavItem
+              icon={Users}
+              label="Utilisateurs"
+              active={currentScreen === "users"}
+              onClick={() => onScreenChange("users")}
+            />
+          )}
         </nav>
 
         <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-sidebar-accent">
+          <button
+            onClick={() => onScreenChange("profile")}
+            className={`w-full flex items-center gap-3 p-3 rounded-lg bg-sidebar-accent hover:bg-accent transition-colors ${currentScreen === "profile" ? "ring-2 ring-ring" : ""}`}
+            title="Mon profil"
+          >
             <UserCircle className="w-8 h-8 text-sidebar-foreground" />
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-sm font-medium text-foreground truncate">
-                {user?.name || "Loading..."}
+                {user?.name || "Chargement..."}
               </p>
               <p className="text-xs text-muted-foreground">
-                {user?.role || "User"}
+                {user?.role || "Utilisateur"}
               </p>
             </div>
-            <Settings className="w-4 h-4 text-muted-foreground cursor-pointer hover:text-foreground" />
-          </div>
+            <Settings className="w-4 h-4 text-muted-foreground" />
+          </button>
         </div>
       </aside>
 
@@ -164,7 +173,7 @@ export function MainLayout({
               <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search medications, batches, suppliers..."
+                placeholder="Rechercher médicaments, lots, fournisseurs..."
                 className="w-96 pl-10 pr-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
@@ -173,11 +182,8 @@ export function MainLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="relative p-2 hover:bg-accent rounded-lg">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
-            </button>
-            <button className="p-2 hover:bg-accent rounded-lg">
+            <NotificationBell onNavigate={() => onScreenChange("expiration")} />
+            <button onClick={() => onScreenChange("profile")} className="p-2 hover:bg-accent rounded-lg" title="Mon profil">
               <Settings className="w-5 h-5" />
             </button>
             <button

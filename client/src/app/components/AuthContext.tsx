@@ -1,5 +1,9 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import { authService, User as AuthUser } from "../../services/auth.service";
+import {
+  authService,
+  User as AuthUser,
+  RegisterResponse,
+} from "../../services/auth.service";
 
 export interface AuthContextType {
   user: AuthUser | null;
@@ -12,10 +16,16 @@ export interface AuthContextType {
     email: string;
     password: string;
     role?: string;
-  }) => Promise<void>;
+  }) => Promise<RegisterResponse>;
+  verifyEmail: (token: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<string>;
+  forgotPassword: (email: string) => Promise<string>;
+  resetPassword: (token: string, password: string) => Promise<string>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
   clearError: () => void;
+  /** Replace the current user in context (e.g. after a profile edit). */
+  updateUser: (user: AuthUser) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -94,8 +104,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         setError(null);
         setIsLoading(true);
-        const userData = await authService.register(credentials);
-        setUser(userData);
+        // Does NOT authenticate — the user must verify their email first.
+        return await authService.register(credentials);
       } catch (err: any) {
         let message = "Registration failed. Please try again.";
 
@@ -119,11 +129,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [],
   );
 
+  const verifyEmail = useCallback(async (token: string) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+      const userData = await authService.verifyEmail(token);
+      setUser(userData);
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Email verification failed. The link may be invalid or expired.";
+      setError(message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const resendVerification = useCallback(async (email: string) => {
+    setError(null);
+    const { message } = await authService.resendVerification(email);
+    return message;
+  }, []);
+
+  const forgotPassword = useCallback(async (email: string) => {
+    setError(null);
+    const { message } = await authService.forgotPassword(email);
+    return message;
+  }, []);
+
+  const resetPassword = useCallback(
+    async (token: string, password: string) => {
+      setError(null);
+      const { message } = await authService.resetPassword(token, password);
+      return message;
+    },
+    [],
+  );
+
   const logout = useCallback(async () => {
     try {
       setError(null);
       setIsLoading(true);
-      authService.logout();
+      await authService.logout();
       setUser(null);
     } catch (err) {
       console.error("Logout error:", err);
@@ -151,6 +200,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
   }, []);
 
+  // Reflect a profile edit immediately in the UI. The session copy in
+  // localStorage is kept in sync by authService.updateProfile.
+  const updateUser = useCallback((updated: AuthUser) => {
+    setUser(updated);
+  }, []);
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
@@ -158,9 +213,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error,
     login,
     register,
+    verifyEmail,
+    resendVerification,
+    forgotPassword,
+    resetPassword,
     logout,
     refreshToken,
     clearError,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

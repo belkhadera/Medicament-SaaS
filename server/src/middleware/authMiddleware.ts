@@ -1,32 +1,28 @@
-import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import User from '../models/User';
-import { UnauthorizedError } from '../core/errors/AppError';
+import { verifyToken } from '../modules/auth/auth.tokens';
 
 export const protect = async (req: any, res: Response, next: NextFunction) => {
-  let token;
+  const authHeader = req.headers.authorization;
 
-  if (req.headers.authorization?.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-      
-      const user = await User.findById(decoded.id).select('-password');
-      if (!user) {
-        throw new UnauthorizedError('User not found');
-      }
-
-      req.user = user;
-      next();
-      return;
-    } catch (error) {
-      console.error('Auth Middleware Error:', error);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
-    }
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Non autorisé, jeton manquant' });
   }
 
-  if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+  try {
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyToken<{ id: string }>(token);
+
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return res.status(401).json({ message: 'Non autorisé, utilisateur introuvable' });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Auth Middleware Error:', error);
+    return res.status(401).json({ message: 'Non autorisé, jeton invalide' });
   }
 };
 
@@ -34,6 +30,6 @@ export const admin = (req: any, res: Response, next: NextFunction) => {
   if (req.user && req.user.role === 'Administrator') {
     next();
   } else {
-    res.status(401).json({ message: 'Not authorized as an admin' });
+    res.status(401).json({ message: "Non autorisé en tant qu'administrateur" });
   }
 };

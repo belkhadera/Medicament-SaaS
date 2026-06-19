@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
     name: string;
@@ -9,7 +8,11 @@ export interface IUser extends Document {
     status: 'active' | 'inactive';
     lastActive: Date;
     refreshToken?: string;
-    comparePassword: (password: string) => Promise<boolean>;
+    isEmailVerified: boolean;
+    emailVerificationToken?: string;
+    emailVerificationExpires?: Date;
+    passwordResetToken?: string;
+    passwordResetExpires?: Date;
 }
 
 const UserSchema: Schema = new Schema({
@@ -23,22 +26,20 @@ const UserSchema: Schema = new Schema({
     },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     lastActive: { type: Date, default: Date.now },
-    refreshToken: { type: String }
+    refreshToken: { type: String },
+
+    // Email verification (token stored hashed; see auth/utils/tokenHelpers)
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String },
+    emailVerificationExpires: { type: Date },
+
+    // Password reset (token stored hashed)
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date }
 }, { timestamps: true });
 
-UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (err: any) {
-        next(err);
-    }
-});
-
-UserSchema.methods.comparePassword = async function (password: string) {
-    return bcrypt.compare(password, this.password);
-};
+// NOTE: Password hashing is owned by the auth layer (auth.service via bcrypt),
+// not the model. A pre('save') hook here would double-hash on register and
+// would not run for findByIdAndUpdate-based profile updates.
 
 export default mongoose.model<IUser>('User', UserSchema);

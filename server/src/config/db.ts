@@ -3,23 +3,29 @@ import mongoose from 'mongoose';
 export async function connectDB() {
   try {
     let mongoUri = process.env.MONGODB_URI;
-    let mongod: any = null;
 
-    // If explicitly requested or no URI provided, start an in-memory MongoDB for dev/testing
-    if (!mongoUri || process.env.USE_IN_MEMORY_DB === 'true') {
+    // In-memory MongoDB is OPT-IN ONLY (explicit USE_IN_MEMORY_DB=true). It is
+    // ephemeral — data does NOT persist between restarts — so it must never be
+    // the silent default. By default we always connect to the real database in
+    // MONGODB_URI so user data is stored and preserved.
+    if (process.env.USE_IN_MEMORY_DB === 'true') {
       const { MongoMemoryServer } = await import('mongodb-memory-server');
-      mongod = await MongoMemoryServer.create();
+      const mongod = await MongoMemoryServer.create();
       mongoUri = mongod.getUri();
-      console.log('🧪 Using in-memory MongoDB for development');
-    }
-
-    await mongoose.connect(mongoUri ?? 'mongodb://localhost:27017/healthcare-saas');
-    console.log('✅ MongoDB connected');
-
-    // expose mongod for graceful shutdown in other modules if needed
-    if (mongod) {
       (global as any).__MONGOD__ = mongod;
+      console.warn('🧪 USE_IN_MEMORY_DB=true — using throwaway in-memory MongoDB. Data will NOT persist.');
     }
+
+    if (!mongoUri) {
+      throw new Error(
+        'MONGODB_URI is not set. Add it to server/.env ' +
+        '(e.g. mongodb://localhost:27017/healthcare-saas) or set USE_IN_MEMORY_DB=true ' +
+        'for a throwaway in-memory database.',
+      );
+    }
+
+    await mongoose.connect(mongoUri);
+    console.log(`✅ MongoDB connected (db: ${mongoose.connection.name})`);
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error);
     process.exit(1);

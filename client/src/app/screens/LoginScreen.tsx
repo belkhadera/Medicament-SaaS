@@ -14,8 +14,8 @@ export function LoginScreen({
   onRegister,
 }: LoginScreenProps) {
   const { login, error, isLoading, clearError } = useAuth();
-  const [email, setEmail] = useState("sarah.j@hospital.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +27,7 @@ export function LoginScreen({
       await login({ email, password });
       onLogin();
     } catch (err: any) {
-      const message = error || err.message || "Login failed";
+      const message = error || err.message || "Échec de la connexion";
       setLocalError(message);
     }
   };
@@ -48,7 +48,7 @@ export function LoginScreen({
             <h1 className="text-2xl font-semibold text-foreground mb-2">
               MediTrack Healthcare
             </h1>
-            <p className="text-muted-foreground">Sign in to your account</p>
+            <p className="text-muted-foreground">Connectez-vous à votre compte</p>
           </div>
 
           {displayError && (
@@ -60,7 +60,7 @@ export function LoginScreen({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Email Address
+                Adresse e-mail
               </label>
               <div className="relative">
                 <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -78,7 +78,7 @@ export function LoginScreen({
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Password
+                Mot de passe
               </label>
               <div className="relative">
                 <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -102,7 +102,7 @@ export function LoginScreen({
                   disabled={isLoading}
                 />
                 <span className="text-sm text-muted-foreground">
-                  Remember me
+                  Se souvenir de moi
                 </span>
               </label>
               <button
@@ -111,7 +111,7 @@ export function LoginScreen({
                 className="text-sm text-primary hover:underline"
                 disabled={isLoading}
               >
-                Forgot password?
+                Mot de passe oublié ?
               </button>
             </div>
 
@@ -120,26 +120,26 @@ export function LoginScreen({
               disabled={isLoading}
               className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
-              {isLoading ? "Signing In..." : "Sign In"}
+              {isLoading ? "Connexion..." : "Se connecter"}
             </button>
           </div>
 
           <div className="mt-6 pt-6 border-t border-border text-center space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                Vous n'avez pas de compte ?{" "}
                 <button
                   type="button"
                   onClick={onRegister}
                   className="text-primary hover:underline font-medium"
                   disabled={isLoading}
                 >
-                  Create one
+                  Créer un compte
                 </button>
               </p>
             </div>
             <p className="text-xs text-muted-foreground">
-              Secured with enterprise-grade encryption{" "}
+              Sécurisé par un chiffrement de niveau professionnel{" "}
               <Shield className="w-4 h-4 inline text-success" />
             </p>
           </div>

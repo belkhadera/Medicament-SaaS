@@ -3,7 +3,7 @@ import { Pill, Mail, Lock, User, Shield, ArrowRight } from "lucide-react";
 import { useAuth } from "../components/useAuth";
 
 interface RegisterScreenProps {
-  onRegister: () => void;
+  onRegister: (email: string) => void;
   onBackToLogin: () => void;
 }
 
@@ -20,12 +20,12 @@ export function RegisterScreen({
   const [error, setError] = useState<string | null>(null);
 
   const validateForm = (): string | null => {
-    if (!name.trim()) return "Please enter your name";
-    if (!email.trim()) return "Please enter your email";
-    if (!password) return "Please enter a password";
-    if (password.length < 6) return "Password must be at least 6 characters";
-    if (password !== confirmPassword) return "Passwords do not match";
-    if (!role) return "Please select a role";
+    if (!name.trim()) return "Veuillez saisir votre nom";
+    if (!email.trim()) return "Veuillez saisir votre e-mail";
+    if (!password) return "Veuillez saisir un mot de passe";
+    if (password.length < 6) return "Le mot de passe doit comporter au moins 6 caractères";
+    if (password !== confirmPassword) return "Les mots de passe ne correspondent pas";
+    if (!role) return "Veuillez sélectionner un rôle";
     return null;
   };
 
@@ -42,9 +42,9 @@ export function RegisterScreen({
 
     try {
       await register({ name, email, password, role });
-      onRegister();
+      onRegister(email);
     } catch (err: any) {
-      const message = authError || err.message || "Registration failed";
+      const message = authError || err.message || "Échec de l'inscription";
       setError(message);
     }
   };
@@ -63,9 +63,9 @@ export function RegisterScreen({
               <Pill className="w-8 h-8 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Create Account
+              Créer un compte
             </h1>
-            <p className="text-muted-foreground">Join MediTrack Healthcare</p>
+            <p className="text-muted-foreground">Rejoignez MediTrack Santé</p>
           </div>
 
           {displayError && (
@@ -77,7 +77,7 @@ export function RegisterScreen({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Full Name
+                Nom complet
               </label>
               <div className="relative">
                 <User className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -86,7 +86,7 @@ export function RegisterScreen({
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="John Doe"
+                  placeholder="Ahmed Bennani"
                   className="w-full pl-10 pr-4 py-2.5 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                   disabled={isLoading}
                 />
@@ -95,7 +95,7 @@ export function RegisterScreen({
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Email Address
+                Adresse e-mail
               </label>
               <div className="relative">
                 <Mail className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -113,7 +113,7 @@ export function RegisterScreen({
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Role
+                Rôle
               </label>
               <select
                 value={role}
@@ -121,16 +121,16 @@ export function RegisterScreen({
                 className="w-full px-4 py-2.5 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={isLoading}
               >
-                <option value="Pharmacist">Pharmacist</option>
-                <option value="Inventory Manager">Inventory Manager</option>
-                <option value="Pharmacy Tech">Pharmacy Tech</option>
-                <option value="Viewer">Viewer</option>
+                <option value="Pharmacist">Pharmacien</option>
+                <option value="Inventory Manager">Gestionnaire de stock</option>
+                <option value="Pharmacy Tech">Technicien en pharmacie</option>
+                <option value="Viewer">Observateur</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Password
+                Mot de passe
               </label>
               <div className="relative">
                 <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -145,13 +145,13 @@ export function RegisterScreen({
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                At least 6 characters
+                Au moins 6 caractères
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Confirm Password
+                Confirmer le mot de passe
               </label>
               <div className="relative">
                 <Lock className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -172,25 +172,25 @@ export function RegisterScreen({
               disabled={isLoading}
               className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {isLoading ? "Creating Account..." : "Create Account"}
+              {isLoading ? "Création du compte..." : "Créer un compte"}
               {!isLoading && <ArrowRight className="w-4 h-4" />}
             </button>
           </div>
 
           <div className="mt-6 pt-6 border-t border-border text-center">
             <p className="text-sm text-muted-foreground mb-3">
-              Already have an account?{" "}
+              Vous avez déjà un compte ?{" "}
               <button
                 type="button"
                 onClick={onBackToLogin}
                 className="text-primary hover:underline font-medium"
                 disabled={isLoading}
               >
-                Sign In
+                Se connecter
               </button>
             </p>
             <p className="text-xs text-muted-foreground">
-              Secured with enterprise-grade encryption{" "}
+              Sécurisé par un chiffrement de niveau professionnel{" "}
               <Shield className="w-4 h-4 inline text-success" />
             </p>
           </div>
